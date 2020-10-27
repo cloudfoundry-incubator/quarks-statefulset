@@ -17,7 +17,7 @@ require (
 	github.com/spf13/afero v1.4.1
 	github.com/spf13/cobra v0.0.7
 	github.com/spf13/viper v1.7.0
-	go.uber.org/zap v1.15.0
+	go.uber.org/zap v1.16.0
 	golang.org/x/tools v0.0.0-20200708183856-df98bc6d456c // indirect
 	gomodules.xyz/jsonpatch/v2 v2.0.1
 	k8s.io/api v0.19.3
