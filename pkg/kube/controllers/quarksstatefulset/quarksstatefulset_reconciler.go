@@ -256,7 +256,7 @@ func (r *ReconcileQuarksStatefulSet) generateSingleStatefulSet(qStatefulSet *qst
 	// Update available-zone specified properties
 	if zoneName != "" {
 		// Override name prefix with zoneIndex
-		statefulSetNamePrefix = fmt.Sprintf("%s-z%d", qStatefulSet.GetName(), zoneIndex)
+		statefulSetNamePrefix = fmt.Sprintf("%s-%s", qStatefulSet.GetName(), zoneName)
 
 		labels[qstsv1a1.LabelAZName] = zoneName
 
