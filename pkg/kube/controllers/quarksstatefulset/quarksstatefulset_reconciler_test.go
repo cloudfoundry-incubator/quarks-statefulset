@@ -212,6 +212,7 @@ var _ = Describe("ReconcileQuarksStatefulSet", func() {
 
 				It("sets pod label for az index to 0 needed by service selector", func() {
 					Expect(ss.Spec.Template.GetLabels()).To(HaveKeyWithValue("quarks.cloudfoundry.org/az-index", "0"))
+					Expect(ss.Spec.Template.GetLabels()).To(HaveKeyWithValue("quarks.cloudfoundry.org/az-name", ""))
 				})
 
 			})
