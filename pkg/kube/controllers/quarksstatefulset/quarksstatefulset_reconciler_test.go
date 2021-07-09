@@ -80,6 +80,10 @@ var _ = Describe("ReconcileQuarksStatefulSet", func() {
 				existingLabel = "existing_label"
 				existingEnv = "existing_env"
 				existingValue = "existing_value"
+				selector := map[string]string{
+					"quarks.cloudfoundry.org/deployment-name":     "kubecf",
+					"quarks.cloudfoundry.org/instance-group-name": "api",
+				}
 
 				desiredQStatefulSet = &qstsv1a1.QuarksStatefulSet{
 					ObjectMeta: metav1.ObjectMeta{
@@ -109,6 +113,14 @@ var _ = Describe("ReconcileQuarksStatefulSet", func() {
 														Value: existingValue,
 													},
 												},
+											},
+										},
+										TopologySpreadConstraints: []corev1.TopologySpreadConstraint{
+											{
+												MaxSkew:           1,
+												TopologyKey:       "ibm-cloud.kubernetes.io/zone",
+												WhenUnsatisfiable: "ScheduleAnyway",
+												LabelSelector:     &metav1.LabelSelector{MatchLabels: selector},
 											},
 										},
 									},
@@ -212,6 +224,11 @@ var _ = Describe("ReconcileQuarksStatefulSet", func() {
 
 				It("sets pod label for az index to 0 needed by service selector", func() {
 					Expect(ss.Spec.Template.GetLabels()).To(HaveKeyWithValue("quarks.cloudfoundry.org/az-index", "0"))
+					Expect(ss.Spec.Template.GetLabels()).To(HaveKeyWithValue("quarks.cloudfoundry.org/az-name", ""))
+				})
+
+				It("sets the TopologySpreadConstraints", func() {
+					Expect(ss.Spec.Template.Spec.TopologySpreadConstraints).Should(HaveLen(1))
 				})
 
 			})
@@ -245,15 +262,15 @@ var _ = Describe("ReconcileQuarksStatefulSet", func() {
 						Expect(err).ToNot(HaveOccurred())
 
 						ssZ0 := &appsv1.StatefulSet{}
-						err = client.Get(context.Background(), types.NamespacedName{Name: "foo-z0", Namespace: "default"}, ssZ0)
+						err = client.Get(context.Background(), types.NamespacedName{Name: "foo-z1-0", Namespace: "default"}, ssZ0)
 						Expect(err).ToNot(HaveOccurred())
 
 						ssZ1 := &appsv1.StatefulSet{}
-						err = client.Get(context.Background(), types.NamespacedName{Name: "foo-z1", Namespace: "default"}, ssZ1)
+						err = client.Get(context.Background(), types.NamespacedName{Name: "foo-z2-1", Namespace: "default"}, ssZ1)
 						Expect(err).ToNot(HaveOccurred())
 
 						ssZ2 := &appsv1.StatefulSet{}
-						err = client.Get(context.Background(), types.NamespacedName{Name: "foo-z2", Namespace: "default"}, ssZ2)
+						err = client.Get(context.Background(), types.NamespacedName{Name: "foo-z3-2", Namespace: "default"}, ssZ2)
 						Expect(err).ToNot(HaveOccurred())
 
 						for idx, ss := range []*appsv1.StatefulSet{ssZ0, ssZ1, ssZ2} {
@@ -274,7 +291,7 @@ var _ = Describe("ReconcileQuarksStatefulSet", func() {
 							Expect(podLabels).Should(HaveKeyWithValue(existingLabel, existingValue))
 							Expect(podLabels).Should(HaveKeyWithValue(qstsv1a1.LabelAZIndex, strconv.Itoa(idx)))
 							Expect(podLabels).Should(HaveKeyWithValue(qstsv1a1.LabelAZName, zones[idx]))
-							Expect(podLabels).Should(HaveKeyWithValue(qstsv1a1.LabelQStsName, fmt.Sprintf("%s-z%d", ess.Name, idx)))
+							Expect(podLabels).Should(HaveKeyWithValue(qstsv1a1.LabelQStsName, fmt.Sprintf("%s-%s-%d", ess.Name, zones[idx], idx)))
 
 							podAnnotations := ss.Spec.Template.GetAnnotations()
 							Expect(podAnnotations).Should(HaveKeyWithValue(existingAnnotation, existingValue))
@@ -351,15 +368,15 @@ var _ = Describe("ReconcileQuarksStatefulSet", func() {
 						Expect(err).ToNot(HaveOccurred())
 
 						ssZ0 := &appsv1.StatefulSet{}
-						err = client.Get(context.Background(), types.NamespacedName{Name: "foo-z0", Namespace: "default"}, ssZ0)
+						err = client.Get(context.Background(), types.NamespacedName{Name: "foo-z1-0", Namespace: "default"}, ssZ0)
 						Expect(err).ToNot(HaveOccurred())
 
 						ssZ1 := &appsv1.StatefulSet{}
-						err = client.Get(context.Background(), types.NamespacedName{Name: "foo-z1", Namespace: "default"}, ssZ1)
+						err = client.Get(context.Background(), types.NamespacedName{Name: "foo-z2-1", Namespace: "default"}, ssZ1)
 						Expect(err).ToNot(HaveOccurred())
 
 						ssZ2 := &appsv1.StatefulSet{}
-						err = client.Get(context.Background(), types.NamespacedName{Name: "foo-z2", Namespace: "default"}, ssZ2)
+						err = client.Get(context.Background(), types.NamespacedName{Name: "foo-z3-2", Namespace: "default"}, ssZ2)
 						Expect(err).ToNot(HaveOccurred())
 
 						for idx, ss := range []*appsv1.StatefulSet{ssZ0, ssZ1, ssZ2} {
@@ -380,7 +397,7 @@ var _ = Describe("ReconcileQuarksStatefulSet", func() {
 							Expect(podLabels).Should(HaveKeyWithValue(existingLabel, existingValue))
 							Expect(podLabels).Should(HaveKeyWithValue(qstsv1a1.LabelAZIndex, strconv.Itoa(idx)))
 							Expect(podLabels).Should(HaveKeyWithValue(qstsv1a1.LabelAZName, zones[idx]))
-							Expect(podLabels).Should(HaveKeyWithValue(qstsv1a1.LabelQStsName, fmt.Sprintf("%s-z%d", ess.Name, idx)))
+							Expect(podLabels).Should(HaveKeyWithValue(qstsv1a1.LabelQStsName, fmt.Sprintf("%s-%s-%d", ess.Name, zones[idx], idx)))
 
 							podAnnotations := ss.Spec.Template.GetAnnotations()
 							Expect(podAnnotations).Should(HaveKeyWithValue(existingAnnotation, existingValue))

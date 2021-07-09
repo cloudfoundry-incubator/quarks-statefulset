@@ -256,7 +256,7 @@ func (r *ReconcileQuarksStatefulSet) generateSingleStatefulSet(qStatefulSet *qst
 	// Update available-zone specified properties
 	if zoneName != "" {
 		// Override name prefix with zoneIndex
-		statefulSetNamePrefix = fmt.Sprintf("%s-z%d", qStatefulSet.GetName(), zoneIndex)
+		statefulSetNamePrefix = fmt.Sprintf("%s-%s-%d", qStatefulSet.GetName(), zoneName, zoneIndex)
 
 		labels[qstsv1a1.LabelAZName] = zoneName
 
@@ -269,6 +269,7 @@ func (r *ReconcileQuarksStatefulSet) generateSingleStatefulSet(qStatefulSet *qst
 		statefulSet = r.updateAffinity(statefulSet, qStatefulSet.Spec.ZoneNodeLabel, zoneName)
 	}
 	labels[qstsv1a1.LabelAZIndex] = strconv.Itoa(zoneIndex)
+	labels[qstsv1a1.LabelAZName] = zoneName
 	labels[qstsv1a1.LabelQStsName] = statefulSetNamePrefix
 
 	annotations[statefulset.AnnotationCanaryRolloutEnabled] = "true"
@@ -287,6 +288,17 @@ func (r *ReconcileQuarksStatefulSet) generateSingleStatefulSet(qStatefulSet *qst
 	statefulSet.SetAnnotations(util.UnionMaps(statefulSet.GetAnnotations(), annotations))
 
 	r.injectContainerEnv(&statefulSet.Spec.Template.Spec, zoneIndex, zoneName, qStatefulSet.Spec.Template.Spec.Replicas, qStatefulSet.Spec.InjectReplicasEnv)
+
+	statefulSet.Spec.Template.Spec.TopologySpreadConstraints = []corev1.TopologySpreadConstraint{
+		{
+			MaxSkew:           1,
+			TopologyKey:       corev1.LabelTopologyZone,
+			WhenUnsatisfiable: corev1.ScheduleAnyway,
+			LabelSelector: &metav1.LabelSelector{
+				MatchLabels: labels,
+			},
+		},
+	}
 	return statefulSet, nil
 }
 
