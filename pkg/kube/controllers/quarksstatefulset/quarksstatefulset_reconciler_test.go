@@ -117,10 +117,10 @@ var _ = Describe("ReconcileQuarksStatefulSet", func() {
 										},
 										TopologySpreadConstraints: []corev1.TopologySpreadConstraint{
 											{
-												MaxSkew: 1,
-												TopologyKey: "ibm-cloud.kubernetes.io/zone",
+												MaxSkew:           1,
+												TopologyKey:       "ibm-cloud.kubernetes.io/zone",
 												WhenUnsatisfiable: "ScheduleAnyway",
-												LabelSelector: &metav1.LabelSelector{MatchLabels: selector},
+												LabelSelector:     &metav1.LabelSelector{MatchLabels: selector},
 											},
 										},
 									},
