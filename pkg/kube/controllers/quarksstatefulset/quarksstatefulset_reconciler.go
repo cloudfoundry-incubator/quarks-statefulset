@@ -289,11 +289,10 @@ func (r *ReconcileQuarksStatefulSet) generateSingleStatefulSet(qStatefulSet *qst
 
 	r.injectContainerEnv(&statefulSet.Spec.Template.Spec, zoneIndex, zoneName, qStatefulSet.Spec.Template.Spec.Replicas, qStatefulSet.Spec.InjectReplicasEnv)
 
-
 	statefulSet.Spec.Template.Spec.TopologySpreadConstraints = []corev1.TopologySpreadConstraint{
 		{
-			MaxSkew: 1,
-			TopologyKey: corev1.LabelTopologyZone,
+			MaxSkew:           1,
+			TopologyKey:       corev1.LabelTopologyZone,
 			WhenUnsatisfiable: corev1.ScheduleAnyway,
 			LabelSelector: &metav1.LabelSelector{
 				MatchLabels: labels,
