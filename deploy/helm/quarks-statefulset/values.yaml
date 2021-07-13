@@ -69,3 +69,5 @@ global:
       # useServiceReference is a boolean to control the use of the
       # service reference in the webhook spec instead of a url.
       useServiceReference: true
+    # Scheduling pod on specicifc nodes by adding labels to nodes
+affinity: {}
