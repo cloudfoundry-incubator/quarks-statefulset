@@ -49,6 +49,7 @@ $ helm delete quarks-statefulset --purge
 | `global.operator.webhook.useServiceReference`     | If true, the webhook server is addressed using a service reference instead of the IP              | `true`                                         |
 | `serviceAccount.create`                           | If true, create a service account                                                      | `true`                                         |
 | `serviceAccount.name`                             | If not set and `create` is `true`, a name is generated using the fullname of the chart |                                                |
+| `affinity`                     |  Scheduling pod on specicifc nodes by adding labels to nodes                                      | `affinity`
 > **Note:**
 >
 > `global.operator.webhook.useServiceReference` will override `operator.webhook.endpoint` configuration
