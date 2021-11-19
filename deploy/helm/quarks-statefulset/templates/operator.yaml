@@ -13,6 +13,9 @@ spec:
       labels:
         name: quarks-statefulset
     spec:
+      {{- if .Values.affinity }}
+      affinity: {{ .Values.affinity | toJson }}
+      {{- end }}
       serviceAccountName: {{ template "quarks-statefulset.serviceAccountName" . }}
       containers:
         - name: quarks-statefulset
